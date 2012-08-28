@@ -26,10 +26,8 @@
 ;; a/ble, fum/ble, rub/ble, mum/ble
 ;; The only exceptions are "ckle" words like "tick/le".
 
-(def vowels #{\a \e \u \i \o \y})
 (defn count-vowels [s]
-  (count (filter vowels (seq (.toLowerCase s))))
-  )
+  (->> s .toLowerCase (filter #{\a \e \i \o \u}) count))
 
 (defn remove-silent-e [word]
   (if (= (last word) \e)
@@ -42,19 +40,16 @@
   (->> s
        split-into-words
        (map (comp count-vowels remove-silent-e))
-       (apply +)
-       ))
+       (apply +)))
 
-(defn generate-poem [structure]
+(defn poem [structure]
   (let [buckets (group-by count-syllables (line-seq (io/reader "src/poetry/proverbs.txt")))]
-    (dorun (map (comp println rand-nth buckets) structure))
-    )
-  )
+    (map (comp rand-nth buckets) structure)))
 
-(defn generate-haiku [] (generate-poem [5 7 5]))
-(defn generate-limerick [] (generate-poem [8 8 5 5 8]))
+(defn haiku [] (poem [5 7 5]))
+(defn limerick [] (poem [8 8 5 5 8]))
 
-(defn generate-shakespearean-sonnets []
+(defn shakespearean-sonnets []
   (filter #(= % 'works-of-shakespeare)
           (partition 400000
                      (map rand-nth
@@ -63,6 +58,9 @@
                             (map char
                                  (range (int \A) (inc (int \Z)))) \space))))))
 
+(defn speak [poem]
+  (doseq [line poem]
+    (println line)
+    (clojure.java.shell/sh "espeak" "-s" "120" "-v" "en-us" line)))
 
-(clojure.java.shell/sh "espeak" "-s" "50" (with-out-str (generate-haiku)))
-
+;;(speak (haiku))
