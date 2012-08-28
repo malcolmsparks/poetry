@@ -1,10 +1,6 @@
 (ns poetry.core
-  (:require [clojure.java.io :as io]))
-
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+  (:require clojure.java.shell
+            [clojure.java.io :as io]))
 
 ;; Syllables Rules:
 ;; A syllable is the sound of a vowel (a, e, i, o, u) that's created when pronouncing a word.
@@ -50,17 +46,16 @@
        ))
 
 (defn generate-poem [structure]
-  (println "--------------------")
   (let [buckets (group-by count-syllables (line-seq (io/reader "src/poetry/proverbs.txt")))]
     (dorun (map (comp println rand-nth buckets) structure))
     )
-  (println "-------END---------"))
+  )
 
 (defn generate-haiku [] (generate-poem [5 7 5]))
 (defn generate-limerick [] (generate-poem [8 8 5 5 8]))
 
 (defn generate-shakespearean-sonnets []
-  (filter #(= % works-of-shakespeare)
+  (filter #(= % 'works-of-shakespeare)
           (partition 400000
                      (map rand-nth
                           (repeat
@@ -69,7 +64,5 @@
                                  (range (int \A) (inc (int \Z)))) \space))))))
 
 
-
-
-(generate-limerick)
+(clojure.java.shell/sh "espeak" "-s" "50" (with-out-str (generate-haiku)))
 
